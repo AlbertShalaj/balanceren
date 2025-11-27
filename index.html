@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="nl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stappenplan Balanceren | LPD 4C</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f2f5;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            color: #667eea;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 1.2em;
+        }
+
+        .main-content {
+            max-width: 1000px;
+            margin: 0 auto 30px;
+        }
+
+        .work-area {
+            background: white;
+            border-radius: 20px;
+            padding: 35px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .reaction-display {
+            background: #4f46e5;
+            border-radius: 16px;
+            padding: 30px;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .reaction-title {
+            font-size: 1.1em;
+            margin-bottom: 15px;
+            opacity: 0.9;
+        }
+
+        .equation {
+            font-size: 2.5em;
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .equation sub {
+            font-size: 0.6em;
+        }
+
+        .equation input {
+            width: 60px;
+            background: rgba(255, 255, 255, 0.9);
+            border: 3px solid white;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 0.8em;
+            font-weight: bold;
+            padding: 8px;
+            margin: 0 5px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .equation input:focus {
+            outline: none;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.5);
+        }
+
+        .equation input.correct {
+            background: #d1fae5;
+            border-color: #10b981;
+            color: #065f46;
+        }
+
+        .equation input.incorrect {
+            background: #fee2e2;
+            border-color: #ef4444;
+            color: #991b1b;
+            animation: shake 0.3s;
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-5px);
+            }
+
+            75% {
+                transform: translateX(5px);
+            }
+        }
+
+        .atom-counter {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+
+        .counter-title {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .count-table {
+            display: grid;
+            grid-template-columns: auto 1fr 1fr;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .count-header {
+            font-weight: 700;
+            color: #666;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .element-row {
+            display: contents;
+        }
+
+        .element-symbol {
+            font-size: 1.5em;
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+            color: #667eea;
+            padding: 10px;
+        }
+
+        .count-value {
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        .count-value.balanced {
+            background: #d1fae5;
+            border-color: #10b981;
+            color: #065f46;
+        }
+
+        .count-value.unbalanced {
+            background: #fee2e2;
+            border-color: #ef4444;
+            color: #991b1b;
+        }
+
+        .hint-box {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+
+        .hint-title {
+            font-weight: 700;
+            color: #92400e;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .hint-text {
+            color: #78350f;
+            line-height: 1.6;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            border: none;
+            border-radius: 12px;
+            padding: 15px 35px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-check {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-hint {
+            background: #f59e0b;
+            color: white;
+        }
+
+        .btn-next {
+            background: #3b82f6;
+            color: white;
+            display: none;
+        }
+
+        .btn-next.show {
+            display: inline-block;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .feedback {
+            background: white;
+            border-radius: 16px;
+            padding: 25px;
+            margin-top: 25px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 1.2em;
+            display: none;
+        }
+
+        .feedback.show {
+            display: block;
+        }
+
+        .feedback.success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 3px solid #10b981;
+        }
+
+        .feedback.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 3px solid #ef4444;
+        }
+
+        .stats {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #4f46e5;
+        }
+
+        .stat-label {
+            font-size: 1em;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .difficulty-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .diff-beginner {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .diff-medium {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .diff-hard {
+            background: #ffedd5;
+            color: #9a3412;
+        }
+
+        .diff-godly {
+            background: #fae8ff;
+            color: #6b21a8;
+            box-shadow: 0 0 10px rgba(168, 85, 247, 0.4);
+            border: 1px solid #d8b4fe;
+        }
+
+        @media (max-width: 1024px) {
+            .container {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>Stappenplan Balanceren</h1>
+            <p class="subtitle">Leer reactievergelijkingen systematisch balanceren met de wet van Lavoisier</p>
+        </header>
+
+        <div class="main-content">
+            <div class="work-area">
+                <div class="reaction-display">
+                    <div id="difficulty-badge" class="difficulty-badge"></div>
+                    <div class="reaction-title" id="reaction-description"></div>
+                    <div class="equation" id="equation-display"></div>
+                </div>
+
+                <div class="atom-counter" id="atom-counter-container">
+                    <div class="counter-title">Atoomtelling</div>
+                    <div class="count-table" id="atom-counts"></div>
+                </div>
+
+                <div class="hint-box" id="hint-box" style="display: none;">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <div class="hint-title" style="margin-bottom: 0;">Hint</div>
+                        <button onclick="hideHint()"
+                            style="background: none; border: none; color: #92400e; cursor: pointer; font-weight: bold;">✕
+                            Verberg</button>
+                    </div>
+                    <div class="hint-text" id="hint-text"></div>
+                </div>
+
+                <div class="controls">
+                    <button class="btn btn-check" onclick="checkBalance()">Controleer</button>
+                    <button class="btn btn-hint" onclick="showHint()">Hint</button>
+                    <button class="btn btn-next" id="next-btn" onclick="nextReaction()">Volgende →</button>
+                </div>
+
+                <div class="feedback" id="feedback"></div>
+            </div>
+        </div>
+
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-value" id="completed-count">0</div>
+                <div class="stat-label">Voltooid</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="attempts-count">0</div>
+                <div class="stat-label">Pogingen</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="success-rate">100%</div>
+                <div class="stat-label">Succespercentage</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const reactions = [
+            // Level 1: Beginner
+            {
+                description: "Vorming van waterstofjodide",
+                reactants: ["H<sub>2</sub>", "I<sub>2</sub>"],
+                products: ["HI"],
+                solution: [1, 1, 2],
+                elements: ["H", "I"],
+                hint: "Kijk naar de I-atomen rechts. Je hebt er 2 nodig!",
+                difficulty: "Niveau 1: Beginner",
+                level: "beginner"
+            },
+            {
+                description: "Vorming van keukenzout",
+                reactants: ["Na", "Cl<sub>2</sub>"],
+                products: ["NaCl"],
+                solution: [2, 1, 2],
+                elements: ["Na", "Cl"],
+                hint: "Chloor (Cl) komt per 2, dus je hebt 2 NaCl nodig.",
+                difficulty: "Niveau 1: Beginner",
+                level: "beginner"
+            },
+            {
+                description: "Ontleding van kwikoxide",
+                reactants: ["HgO"],
+                products: ["Hg", "O<sub>2</sub>"],
+                solution: [2, 2, 1],
+                elements: ["Hg", "O"],
+                hint: "Zuurstof komt vrij als O₂, dus je moet links verdubbelen.",
+                difficulty: "Niveau 1: Beginner",
+                level: "beginner"
+            },
+            {
+                description: "Vorming van waterstoffluoride",
+                reactants: ["H<sub>2</sub>", "F<sub>2</sub>"],
+                products: ["HF"],
+                solution: [1, 1, 2],
+                elements: ["H", "F"],
+                hint: "Net als bij waterstofjodide, simpelweg rechts verdubbelen.",
+                difficulty: "Niveau 1: Beginner",
+                level: "beginner"
+            },
+            {
+                description: "Oxidatie van lithium",
+                reactants: ["Li", "O<sub>2</sub>"],
+                products: ["Li<sub>2</sub>O"],
+                solution: [4, 1, 2],
+                elements: ["Li", "O"],
+                hint: "Let op de ladingen! Je hebt 4 Li atomen nodig.",
+                difficulty: "Niveau 1: Beginner",
+                level: "beginner"
+            },
+
+            // Level 2: Medium
+            {
+                description: "Productie van ammoniak (Haber-Bosch)",
+                reactants: ["N<sub>2</sub>", "H<sub>2</sub>"],
+                products: ["NH<sub>3</sub>"],
+                solution: [1, 3, 2],
+                elements: ["N", "H"],
+                hint: "2 N links betekent 2 NH₃ rechts. Pas dan de H aan.",
+                difficulty: "Niveau 2: Gemiddeld",
+                level: "medium"
+            },
+            {
+                description: "Verbranding van aardgas",
+                reactants: ["CH<sub>4</sub>", "O<sub>2</sub>"],
+                products: ["CO<sub>2</sub>", "H<sub>2</sub>O"],
+                solution: [1, 2, 1, 2],
+                elements: ["C", "H", "O"],
+                hint: "Balanceer C, dan H, en als laatste O.",
+                difficulty: "Niveau 2: Gemiddeld",
+                level: "medium"
+            },
+            {
+                description: "Ontleding van kaliumchloraat",
+                reactants: ["KClO<sub>3</sub>"],
+                products: ["KCl", "O<sub>2</sub>"],
+                solution: [2, 2, 3],
+                elements: ["K", "Cl", "O"],
+                hint: "O₃ links en O₂ rechts? Zoek het kleinste gemene veelvoud (6).",
+                difficulty: "Niveau 2: Gemiddeld",
+                level: "medium"
+            },
+            {
+                description: "Vorming van fosfortrichloride",
+                reactants: ["P<sub>4</sub>", "Cl<sub>2</sub>"],
+                products: ["PCl<sub>3</sub>"],
+                solution: [1, 6, 4],
+                elements: ["P", "Cl"],
+                hint: "P₄ betekent dat je 4 PCl₃ nodig hebt. Hoeveel Cl₂ is dat?",
+                difficulty: "Niveau 2: Gemiddeld",
+                level: "medium"
+            },
+            {
+                description: "Vorming van distikstofpentoxide",
+                reactants: ["N<sub>2</sub>", "O<sub>2</sub>"],
+                products: ["N<sub>2</sub>O<sub>5</sub>"],
+                solution: [2, 5, 2],
+                elements: ["N", "O"],
+                hint: "Oneven aantal zuurstofatomen rechts? Verdubbelen!",
+                difficulty: "Niveau 2: Gemiddeld",
+                level: "medium"
+            },
+
+            // Level 3: Hard
+            {
+                description: "Roesten van ijzer",
+                reactants: ["Fe", "O<sub>2</sub>"],
+                products: ["Fe<sub>2</sub>O<sub>3</sub>"],
+                solution: [4, 3, 2],
+                elements: ["Fe", "O"],
+                hint: "Even en oneven O-atomen? Verdubbel Fe₂O₃ om O even te maken.",
+                difficulty: "Niveau 3: Moeilijk",
+                level: "hard"
+            },
+            {
+                description: "Verbranding van propaan",
+                reactants: ["C<sub>3</sub>H<sub>8</sub>", "O<sub>2</sub>"],
+                products: ["CO<sub>2</sub>", "H<sub>2</sub>O"],
+                solution: [1, 5, 3, 4],
+                elements: ["C", "H", "O"],
+                hint: "3 C → 3 CO₂, 8 H → 4 H₂O. Tel nu alle O's rechts.",
+                difficulty: "Niveau 3: Moeilijk",
+                level: "hard"
+            },
+            {
+                description: "Reactie van aluminium met chloor",
+                reactants: ["Al", "Cl<sub>2</sub>"],
+                products: ["AlCl<sub>3</sub>"],
+                solution: [2, 3, 2],
+                elements: ["Al", "Cl"],
+                hint: "Cl₂ en Cl₃? Ga naar 6 Cl-atomen.",
+                difficulty: "Niveau 3: Moeilijk",
+                level: "hard"
+            },
+            {
+                description: "Verbranding van ethaan",
+                reactants: ["C<sub>2</sub>H<sub>6</sub>", "O<sub>2</sub>"],
+                products: ["CO<sub>2</sub>", "H<sub>2</sub>O"],
+                solution: [2, 7, 4, 6],
+                elements: ["C", "H", "O"],
+                hint: "Vergeet niet alles te verdubbelen als je op een half O₂ molecuul uitkomt.",
+                difficulty: "Niveau 3: Moeilijk",
+                level: "hard"
+            },
+            {
+                description: "Oxidatie van arseen",
+                reactants: ["As", "O<sub>2</sub>"],
+                products: ["As<sub>2</sub>O<sub>3</sub>"],
+                solution: [4, 3, 2],
+                elements: ["As", "O"],
+                hint: "Vergelijkbaar met aluminiumoxide. Zoek het kleinste gemene veelvoud.",
+                difficulty: "Niveau 3: Moeilijk",
+                level: "hard"
+            },
+
+            // Level 4: Godly
+            {
+                description: "Verbranding van butaan",
+                reactants: ["C<sub>4</sub>H<sub>10</sub>", "O<sub>2</sub>"],
+                products: ["CO<sub>2</sub>", "H<sub>2</sub>O"],
+                solution: [2, 13, 8, 10],
+                elements: ["C", "H", "O"],
+                hint: "4 C → 4 CO₂, 10 H → 5 H₂O. Oeps, oneven aantal O's (13). Alles verdubbelen!",
+                difficulty: "Niveau 4: Meester Balanceerder",
+                level: "godly"
+            },
+            {
+                description: "Ostwaldproces (stap 1)",
+                reactants: ["NH<sub>3</sub>", "O<sub>2</sub>"],
+                products: ["NO", "H<sub>2</sub>O"],
+                solution: [4, 5, 4, 6],
+                elements: ["N", "H", "O"],
+                hint: "Dit is een puzzel. Probeer H op 12 te krijgen (kleinste veelvoud van 3 en 2).",
+                difficulty: "Niveau 4: Meester Balanceerder",
+                level: "godly"
+            },
+            {
+                description: "Roosten van pyriet (fool's gold)",
+                reactants: ["FeS<sub>2</sub>", "O<sub>2</sub>"],
+                products: ["Fe<sub>2</sub>O<sub>3</sub>", "SO<sub>2</sub>"],
+                solution: [4, 11, 2, 8],
+                elements: ["Fe", "S", "O"],
+                hint: "Begin met Fe. Dan S. Tel de O's. Oneven? Alles verdubbelen!",
+                difficulty: "Niveau 4: Meester Balanceerder",
+                level: "godly"
+            },
+            {
+                description: "Verbranding van benzeen",
+                reactants: ["C<sub>6</sub>H<sub>6</sub>", "O<sub>2</sub>"],
+                products: ["CO<sub>2</sub>", "H<sub>2</sub>O"],
+                solution: [2, 15, 12, 6],
+                elements: ["C", "H", "O"],
+                hint: "Een klassieke organische verbranding. Grote coëfficiënten nodig!",
+                difficulty: "Niveau 4: Meester Balanceerder",
+                level: "godly"
+            },
+            {
+                description: "Verbranding van octaan (benzine)",
+                reactants: ["C<sub>8</sub>H<sub>18</sub>", "O<sub>2</sub>"],
+                products: ["CO<sub>2</sub>", "H<sub>2</sub>O"],
+                solution: [2, 25, 16, 18],
+                elements: ["C", "H", "O"],
+                hint: "Dit vereist veel zuurstof! Tel zorgvuldig.",
+                difficulty: "Niveau 4: Meester Balanceerder",
+                level: "godly"
+            }
+        ];
+
+        let currentReaction = 0;
+        let completed = 0;
+        let attempts = 0;
+        let inputs = [];
+
+        function parseFormula(formula) {
+            const div = document.createElement('div');
+            div.innerHTML = formula;
+            return div.textContent;
+        }
+
+        function countAtoms(formula, coefficient = 1) {
+            const counts = {};
+            const text = parseFormula(formula);
+
+            // Simple parser for basic formulas
+            const regex = /([A-Z][a-z]?)(\d*)/g;
+            let match;
+
+            while ((match = regex.exec(text)) !== null) {
+                const element = match[1];
+                const count = match[2] ? parseInt(match[2]) : 1;
+                counts[element] = (counts[element] || 0) + (count * coefficient);
+            }
+
+            return counts;
+        }
+
+        function loadReaction() {
+            const reaction = reactions[currentReaction];
+            document.getElementById('reaction-description').textContent = reaction.description;
+
+            const badge = document.getElementById('difficulty-badge');
+            badge.textContent = reaction.difficulty;
+            badge.className = 'difficulty-badge diff-' + reaction.level;
+
+            let equation = '';
+            inputs = [];
+
+            // Reactants
+            reaction.reactants.forEach((reactant, i) => {
+                equation += `<input type="number" min="1" max="20" value="1" id="coef-${i}" /> ${reactant}`;
+                inputs.push(`coef-${i}`);
+                if (i < reaction.reactants.length - 1) equation += ' + ';
+            });
+
+            equation += ' → ';
+
+            // Products
+            reaction.products.forEach((product, i) => {
+                const idx = reaction.reactants.length + i;
+                equation += `<input type="number" min="1" max="20" value="1" id="coef-${idx}" /> ${product}`;
+                inputs.push(`coef-${idx}`);
+                if (i < reaction.products.length - 1) equation += ' + ';
+            });
+
+            document.getElementById('equation-display').innerHTML = equation;
+
+            // Add event listeners to inputs
+            inputs.forEach(id => {
+                const input = document.getElementById(id);
+                input.addEventListener('input', updateAtomCounts);
+                input.addEventListener('change', updateAtomCounts);
+            });
+
+            updateAtomCounts();
+
+            // Logic to hide/show atom counter
+            const counterContainer = document.getElementById('atom-counter-container');
+            if (currentReaction === 0) {
+                counterContainer.style.display = 'block';
+            } else {
+                counterContainer.style.display = 'none';
+            }
+
+            document.getElementById('hint-box').style.display = 'none';
+            document.getElementById('feedback').classList.remove('show');
+            document.getElementById('next-btn').classList.remove('show');
+        }
+
+        function updateAtomCounts() {
+            const reaction = reactions[currentReaction];
+            const leftCounts = {};
+            const rightCounts = {};
+
+            // Count left side
+            reaction.reactants.forEach((reactant, i) => {
+                const coef = parseInt(document.getElementById(`coef-${i}`).value) || 1;
+                const counts = countAtoms(reactant, coef);
+                for (const [element, count] of Object.entries(counts)) {
+                    leftCounts[element] = (leftCounts[element] || 0) + count;
+                }
+            });
+
+            // Count right side
+            reaction.products.forEach((product, i) => {
+                const idx = reaction.reactants.length + i;
+                const coef = parseInt(document.getElementById(`coef-${idx}`).value) || 1;
+                const counts = countAtoms(product, coef);
+                for (const [element, count] of Object.entries(counts)) {
+                    rightCounts[element] = (rightCounts[element] || 0) + count;
+                }
+            });
+
+            // Display counts
+            let html = '<div class="count-header">Element</div><div class="count-header">Links</div><div class="count-header">Rechts</div>';
+
+            reaction.elements.forEach(element => {
+                const left = leftCounts[element] || 0;
+                const right = rightCounts[element] || 0;
+                const balanced = left === right;
+
+                html += `
+                    <div class="element-symbol">${element}</div>
+                    <div class="count-value ${balanced ? 'balanced' : 'unbalanced'}">${left}</div>
+                    <div class="count-value ${balanced ? 'balanced' : 'unbalanced'}">${right}</div>
+                `;
+            });
+
+            document.getElementById('atom-counts').innerHTML = html;
+        }
+
+        function checkBalance() {
+            attempts++;
+            const reaction = reactions[currentReaction];
+            const userSolution = inputs.map(id => parseInt(document.getElementById(id).value) || 1);
+
+            const isCorrect = JSON.stringify(userSolution) === JSON.stringify(reaction.solution);
+
+            const feedback = document.getElementById('feedback');
+            feedback.classList.add('show');
+
+            if (isCorrect) {
+                feedback.className = 'feedback show success';
+                feedback.innerHTML = 'Perfect! De reactievergelijking is correct gebalanceerd!';
+                completed++;
+                document.getElementById('next-btn').classList.add('show');
+
+                // Mark inputs as correct
+                inputs.forEach(id => {
+                    document.getElementById(id).classList.add('correct');
+                    document.getElementById(id).disabled = true;
+                });
+            } else {
+                feedback.className = 'feedback show error';
+                feedback.innerHTML = 'Nog niet helemaal correct. Controleer de atoomtellingen en probeer opnieuw!';
+
+                // Mark inputs as incorrect temporarily
+                inputs.forEach(id => {
+                    const input = document.getElementById(id);
+                    input.classList.add('incorrect');
+                    setTimeout(() => input.classList.remove('incorrect'), 500);
+                });
+
+                // Show atom counter on mistake to assist
+                document.getElementById('atom-counter-container').style.display = 'block';
+            }
+
+            updateStats();
+        }
+
+        function showHint() {
+            const reaction = reactions[currentReaction];
+            document.getElementById('hint-text').textContent = reaction.hint;
+            document.getElementById('hint-box').style.display = 'block';
+        }
+
+        function hideHint() {
+            document.getElementById('hint-box').style.display = 'none';
+        }
+
+        function nextReaction() {
+            currentReaction++;
+            if (currentReaction >= reactions.length) {
+                // Show completion message
+                const feedback = document.getElementById('feedback');
+                feedback.className = 'feedback show success';
+                feedback.innerHTML = `Gefeliciteerd! Je hebt alle ${reactions.length} reactievergelijkingen voltooid!<br><br>
+                    <button class="btn btn-check" onclick="location.reload()">Opnieuw Beginnen</button>`;
+                document.getElementById('next-btn').style.display = 'none';
+            } else {
+                loadReaction();
+            }
+        }
+
+        function updateStats() {
+            document.getElementById('completed-count').textContent = completed;
+            document.getElementById('attempts-count').textContent = attempts;
+            const rate = attempts > 0 ? Math.round((completed / attempts) * 100) : 100;
+            document.getElementById('success-rate').textContent = rate + '%';
+        }
+
+        // Initialize
+        loadReaction();
+        updateStats();
+    </script>
+</body>
+
+</html>
